@@ -1,0 +1,7 @@
+{
+  "node_id": "node4",
+  "region": "us-west-2a",
+  "rack": "rack-04",
+  "status": "ONLINE",
+  "capacity": 10737418240
+}

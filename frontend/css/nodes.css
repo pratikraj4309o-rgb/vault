@@ -1,0 +1,133 @@
+.nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.node-card {
+  background: linear-gradient(160deg, #131e36 0%, #0c1323 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+}
+
+.node-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.node-card.node-failed {
+  border-color: rgba(244, 63, 94, 0.55);
+  background: linear-gradient(160deg, rgba(65, 16, 30, 0.45) 0%, #0c1323 100%);
+}
+
+.node-card.node-partitioned {
+  border-color: rgba(245, 158, 11, 0.55);
+  background: linear-gradient(160deg, rgba(65, 45, 12, 0.4) 0%, #0c1323 100%);
+}
+
+.node-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.node-id-title {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-metrics-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+  font-size: 12.5px;
+}
+
+.node-metric-item {
+  background: rgba(7, 11, 20, 0.55);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.node-metric-label {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.node-metric-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.util-bar-container {
+  margin-top: 10px;
+}
+
+.util-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  margin-bottom: 5px;
+  color: var(--text-secondary);
+}
+
+.util-bar-track {
+  height: 8px;
+  background: #070b14;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.util-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-indigo));
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.util-bar-fill.high {
+  background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose));
+}
+
+.node-actions-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+/* Interactive Topology Canvas */
+.topology-container {
+  background: radial-gradient(circle at center, #131e38 0%, #080d18 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.topology-svg {
+  width: 100%;
+  max-width: 920px;
+  height: 330px;
+}

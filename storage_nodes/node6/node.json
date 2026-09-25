@@ -1,0 +1,9 @@
+{
+  "node_id": "node6",
+  "region": "us-autoscale-6",
+  "rack": "rack-06",
+  "status": "ONLINE",
+  "capacity": 10737418240,
+  "auto_scaled": true,
+  "reason": "Manual auto-scale request from console"
+}

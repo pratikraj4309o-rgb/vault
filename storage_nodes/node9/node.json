@@ -1,0 +1,9 @@
+{
+  "node_id": "node9",
+  "region": "us-autoscale-9",
+  "rack": "rack-09",
+  "status": "ONLINE",
+  "capacity": 10737418240,
+  "auto_scaled": true,
+  "reason": "Auto-scaling replacement node for crashed NODE5"
+}

@@ -1,0 +1,7 @@
+{
+  "node_id": "node3",
+  "region": "us-east-1c",
+  "rack": "rack-03",
+  "status": "ONLINE",
+  "capacity": 10737418240
+}

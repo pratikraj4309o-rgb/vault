@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+data/*.db
+data/*.db-journal
+storage_nodes/*/data/*
+!storage_nodes/*/data/.gitkeep
+.pytest_cache/
+.coverage
