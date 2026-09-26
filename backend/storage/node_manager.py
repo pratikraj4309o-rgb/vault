@@ -105,6 +105,9 @@ class NodeManager:
         self.prune_repaired_failed_nodes()
         self.refresh_all_node_metrics()
         nodes = db.fetch_all("SELECT * FROM nodes ORDER BY node_id ASC")
+        if not nodes:
+            self.initialize_nodes()
+            nodes = db.fetch_all("SELECT * FROM nodes ORDER BY node_id ASC")
         result = []
         for n in nodes:
             cap = max(1, n["capacity"])

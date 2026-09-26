@@ -19,6 +19,7 @@ class DatabaseManager:
     def __init__(self, db_path: Optional[Path] = None) -> None:
         self._db_path = db_path or settings.database_path
         self._lock = threading.RLock()
+        self._schema_initialized: bool = False
 
     @property
     def db_path(self) -> Path:
@@ -27,6 +28,7 @@ class DatabaseManager:
     def set_db_path(self, new_path: Path) -> None:
         with self._lock:
             self._db_path = new_path
+            self._schema_initialized = False
 
     def get_connection(self) -> sqlite3.Connection:
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -38,6 +40,16 @@ class DatabaseManager:
             conn.execute("PRAGMA journal_mode=DELETE;")
         conn.execute("PRAGMA foreign_keys=ON;")
         conn.execute("PRAGMA synchronous=NORMAL;")
+
+        if not self._schema_initialized:
+            try:
+                row = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='nodes' LIMIT 1;").fetchone()
+                if not row:
+                    self._create_tables(conn)
+                self._schema_initialized = True
+            except Exception as e:
+                logger.warning("Could not auto-verify schema on connect: %s", e)
+
         return conn
 
     @contextmanager
@@ -61,11 +73,10 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def initialize_schema(self) -> None:
-        with self.transaction() as conn:
-            conn.executescript(
-                """
-                CREATE TABLE IF NOT EXISTS nodes (
+    def _create_tables(self, conn: sqlite3.Connection) -> None:
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS nodes (
                     node_id TEXT PRIMARY KEY,
                     status TEXT NOT NULL DEFAULT 'ONLINE',
                     capacity INTEGER NOT NULL,
@@ -142,6 +153,11 @@ class DatabaseManager:
                 );
                 """
             )
+
+    def initialize_schema(self) -> None:
+        with self.transaction() as conn:
+            self._create_tables(conn)
+        self._schema_initialized = True
         logger.info("Database schema initialized at %s", self._db_path)
 
     def log_activity(
