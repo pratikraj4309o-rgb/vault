@@ -19,7 +19,8 @@ const AuthUI = {
   async fetchCurrentUser() {
     if (!this.token) return;
     try {
-      const res = await fetch("/api/auth/user", {
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/auth/user", {
         headers: { Authorization: `Bearer ${this.token}` },
       });
       if (res.ok) {
@@ -201,7 +202,8 @@ const AuthUI = {
 
   async refreshAdminSupabaseStatus() {
     try {
-      const res = await fetch("/api/supabase/status");
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/status");
       if (!res.ok) return;
       const data = await res.json();
       const pill = document.getElementById("admin-supabase-status-pill");
@@ -257,8 +259,9 @@ const AuthUI = {
     submitBtn.disabled = true;
 
     try {
+      const apiBase = window.API_BASE || "";
       const endpoint = this.activeTab === "login" ? "/api/auth/login" : "/api/auth/signup";
-      const res = await fetch(endpoint, {
+      const res = await fetch(apiBase + endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -344,7 +347,8 @@ const AuthUI = {
   async handleLogout() {
     try {
       if (this.token) {
-        await fetch("/api/auth/logout", {
+        const apiBase = window.API_BASE || "";
+        await fetch(apiBase + "/api/auth/logout", {
           method: "POST",
           headers: { Authorization: `Bearer ${this.token}` },
         });

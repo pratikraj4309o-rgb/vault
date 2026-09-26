@@ -2,6 +2,21 @@
  * Centralized API Client for NexStore VAULT Distributed Object Storage System.
  * All communication with the FastAPI backend passes through this module.
  */
+const API_BASE = (function () {
+  if (typeof window !== 'undefined') {
+    if (window.location.protocol === 'file:') return 'http://127.0.0.1:8000';
+    if (
+      (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') &&
+      window.location.port &&
+      window.location.port !== '8000'
+    ) {
+      return 'http://127.0.0.1:8000';
+    }
+  }
+  return '';
+})();
+window.API_BASE = API_BASE;
+
 const api = {
   async _request(path, options = {}) {
     const headers = options.headers || {};
@@ -15,7 +30,8 @@ const api = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(path, {
+    const fullPath = path.startsWith('http') ? path : (window.API_BASE || '') + path;
+    const response = await fetch(fullPath, {
       ...options,
       headers,
     });

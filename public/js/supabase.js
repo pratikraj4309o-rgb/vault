@@ -14,7 +14,8 @@ const SupabaseUI = {
 
   async refreshStatus() {
     try {
-      const res = await fetch("/api/supabase/status");
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/status");
       if (!res.ok) return;
       const data = await res.json();
 
@@ -84,7 +85,8 @@ const SupabaseUI = {
 
   async fetchSchema() {
     try {
-      const res = await fetch("/api/supabase/schema");
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/schema");
       if (res.ok) {
         const data = await res.json();
         this.schemaSql = data.sql || "";
@@ -161,7 +163,8 @@ const SupabaseUI = {
     connectBtn.disabled = true;
 
     try {
-      const res = await fetch("/api/supabase/connect", {
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ supabase_url: url, supabase_key: key }),
@@ -205,7 +208,8 @@ const SupabaseUI = {
     syncBtn.disabled = true;
 
     try {
-      const res = await fetch("/api/supabase/sync", { method: "POST" });
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/sync", { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
         this.showError(data.detail || "Manual sync failed.");
@@ -232,7 +236,8 @@ const SupabaseUI = {
     }
     this.hideMessages();
     try {
-      const res = await fetch("/api/supabase/disconnect", { method: "POST" });
+      const apiBase = window.API_BASE || "";
+      const res = await fetch(apiBase + "/api/supabase/disconnect", { method: "POST" });
       if (res.ok) {
         const keyInput = document.getElementById("supabase-input-key");
         if (keyInput) keyInput.value = "";
