@@ -11,3 +11,4 @@ storage_nodes/*/data/*
 !storage_nodes/*/data/.gitkeep
 .pytest_cache/
 .coverage
+.freebuff/

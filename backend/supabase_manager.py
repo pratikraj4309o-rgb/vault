@@ -35,15 +35,15 @@ class SupabaseManager:
 
     def _init_client(self, url: str, key: str, silent: bool = False) -> bool:
         try:
-            from supabase import create_client, ClientOptions
+            from supabase import create_client
 
             self._client = create_client(url.strip(), key.strip())
-            # Quick verification query on schema
-            res = self._client.table("vault_nodes").select("node_id").limit(1).execute()
+            if not silent:
+                # Only run verification query if explicitly requested, avoiding import-time network stalls
+                res = self._client.table("vault_nodes").select("node_id").limit(1).execute()
+                logger.info("Successfully connected to Supabase project at %s", url)
             self.connected = True
             self.last_error = None
-            if not silent:
-                logger.info("Successfully connected to Supabase project at %s", url)
             return True
         except Exception as exc:
             self.connected = False

@@ -25,10 +25,6 @@ from backend.database import db
 from backend.exceptions import VaultException
 from backend.logging_config import logger
 from backend.storage.node_manager import node_manager
-from backend.workers.health_worker import start_health_worker
-from backend.workers.integrity_worker import start_integrity_worker
-from backend.workers.rebalance_worker import start_rebalance_worker
-from backend.workers.repair_worker import start_repair_worker
 
 
 @asynccontextmanager
@@ -40,12 +36,16 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.error("Startup initialization error: %s", exc)
 
-    # 2. Start background workers ONLY in persistent server environments (NOT in Vercel serverless)
     is_serverless = os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
     tasks = []
     stop_event = asyncio.Event()
 
     if not is_serverless:
+        from backend.workers.health_worker import start_health_worker
+        from backend.workers.integrity_worker import start_integrity_worker
+        from backend.workers.rebalance_worker import start_rebalance_worker
+        from backend.workers.repair_worker import start_repair_worker
+
         tasks = [
             asyncio.create_task(start_health_worker(stop_event)),
             asyncio.create_task(start_repair_worker(stop_event)),
@@ -153,6 +153,8 @@ app.include_router(integrity.router)
 app.include_router(supabase_router.router)
 app.include_router(auth.router)
 
+is_serverless = os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
+
 def _find_frontend_dir() -> Path:
     for candidate in (BASE_DIR / "public", BASE_DIR / "frontend"):
         if candidate.exists() and (candidate / "index.html").exists():
@@ -162,16 +164,14 @@ def _find_frontend_dir() -> Path:
 
 FRONTEND_DIR = _find_frontend_dir()
 
-if FRONTEND_DIR.exists():
+if not is_serverless and FRONTEND_DIR.exists():
     for subdir in ("css", "js", "assets"):
         target = FRONTEND_DIR / subdir
-        if not target.exists():
+        if target.exists() and target.is_dir():
             try:
-                target.mkdir(parents=True, exist_ok=True)
-            except OSError:
+                app.mount(f"/{subdir}", StaticFiles(directory=str(target)), name=subdir)
+            except Exception:
                 pass
-        if target.exists():
-            app.mount(f"/{subdir}", StaticFiles(directory=str(target)), name=subdir)
 
 
 @app.get("/")
