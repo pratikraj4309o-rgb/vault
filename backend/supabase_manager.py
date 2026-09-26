@@ -429,8 +429,14 @@ class SupabaseManager:
             }
         except Exception as exc:
             err_msg = str(exc)
+            if "already registered" in err_msg.lower():
+                friendly_msg = "An account with this email already exists. Please click 'Sign In' below to log in."
+            elif "rate limit" in err_msg.lower():
+                friendly_msg = "Supabase email rate limit reached. In Supabase Dashboard > Authentication > Providers > Email, turn off 'Confirm email'."
+            else:
+                friendly_msg = err_msg
             logger.warning("Supabase Auth sign up failed: %s", exc)
-            return {"status": "error", "message": err_msg}
+            return {"status": "error", "message": friendly_msg}
 
     def auth_sign_in(self, email: str, password: str) -> Dict[str, Any]:
         """Authenticates user with email and password via Supabase Auth."""
