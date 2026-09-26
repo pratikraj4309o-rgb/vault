@@ -33,18 +33,28 @@ from backend.workers.repair_worker import start_repair_worker
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 1. Initialize SQLite schema & 5 simulated storage nodes
-    db.initialize_schema()
-    node_manager.initialize_nodes()
+    try:
+        db.initialize_schema()
+        node_manager.initialize_nodes()
+    except Exception as exc:
+        logger.error("Startup initialization error: %s", exc)
 
-    # 2. Start background workers
+    # 2. Start background workers ONLY in persistent server environments (NOT in Vercel serverless)
+    is_serverless = os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
+    tasks = []
     stop_event = asyncio.Event()
-    tasks = [
-        asyncio.create_task(start_health_worker(stop_event)),
-        asyncio.create_task(start_repair_worker(stop_event)),
-        asyncio.create_task(start_integrity_worker(stop_event)),
-        asyncio.create_task(start_rebalance_worker(stop_event)),
-    ]
-    logger.info("%s initialized and ready on http://%s:%d", settings.app_name, settings.host, settings.port)
+
+    if not is_serverless:
+        tasks = [
+            asyncio.create_task(start_health_worker(stop_event)),
+            asyncio.create_task(start_repair_worker(stop_event)),
+            asyncio.create_task(start_integrity_worker(stop_event)),
+            asyncio.create_task(start_rebalance_worker(stop_event)),
+        ]
+        logger.info("%s initialized and ready on http://%s:%d (Background workers active)", settings.app_name, settings.host, settings.port)
+    else:
+        logger.info("%s running in Serverless mode (Background worker loops disabled for function safety)", settings.app_name)
+
     try:
         yield
     finally:

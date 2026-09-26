@@ -18,7 +18,9 @@ class NodeManager:
             for i in range(1, settings.node_count + 1):
                 node_id = f"node{i}"
                 node_dir = object_store.get_node_dir(node_id)
+                node_dir.mkdir(parents=True, exist_ok=True)
                 data_dir = object_store.get_node_data_dir(node_id)
+                data_dir.mkdir(parents=True, exist_ok=True)
                 node_json_path = node_dir / "node.json"
 
                 if not node_json_path.exists():

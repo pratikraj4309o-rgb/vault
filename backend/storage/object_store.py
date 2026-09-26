@@ -33,6 +33,7 @@ class ObjectStore:
         node_dir = (self._storage_root / safe_node).resolve()
         if not str(node_dir).startswith(str(self._storage_root.resolve())):
             raise InvalidConfigurationError("Path traversal detected in node_id")
+        node_dir.mkdir(parents=True, exist_ok=True)
         return node_dir
 
     def get_node_data_dir(self, node_id: str) -> Path:
