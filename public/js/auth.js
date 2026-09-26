@@ -264,10 +264,25 @@ const AuthUI = {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      let data = {};
+      const rawText = await res.text();
+      try {
+        data = JSON.parse(rawText);
+      } catch (_) {
+        this.showError(`Server error (${res.status}): ${rawText.slice(0, 160) || "Unable to reach authentication server"}`);
+        return;
+      }
+
       if (!res.ok) {
-        const detail = data.detail || "Authentication failed.";
-        this.showError(typeof detail === "string" ? detail : (detail.message || "Failed to authenticate."));
+        let detail = data.detail || data.error || data.message || "Authentication failed.";
+        if (typeof detail === 'object') {
+          if (Array.isArray(detail)) {
+            detail = detail.map(m => (m && (m.msg || m.message)) || JSON.stringify(m)).join('; ');
+          } else {
+            detail = detail.msg || detail.message || JSON.stringify(detail);
+          }
+        }
+        this.showError(String(detail));
         return;
       }
 

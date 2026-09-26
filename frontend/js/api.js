@@ -22,11 +22,24 @@ const api = {
 
     if (!response.ok) {
       let errPayload = {};
+      const rawText = await response.text();
       try {
-        errPayload = await response.json();
-      } catch (_) {}
-      const msg = errPayload.detail || errPayload.error || `HTTP ${response.status}`;
-      const error = new Error(msg);
+        errPayload = JSON.parse(rawText);
+      } catch (_) {
+        errPayload = { detail: rawText || `HTTP ${response.status}` };
+      }
+      let msg = errPayload.detail || errPayload.error || errPayload.message;
+      if (typeof msg === 'object') {
+        if (Array.isArray(msg)) {
+          msg = msg.map(m => (m && (m.msg || m.message)) || JSON.stringify(m)).join('; ');
+        } else {
+          msg = msg.msg || msg.message || JSON.stringify(msg);
+        }
+      }
+      if (!msg) {
+        msg = `HTTP ${response.status}: Request failed`;
+      }
+      const error = new Error(String(msg));
       error.status = response.status;
       error.payload = errPayload;
       throw error;

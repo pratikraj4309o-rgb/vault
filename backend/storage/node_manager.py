@@ -140,9 +140,15 @@ class NodeManager:
 
     def get_healthy_nodes(self) -> List[Dict[str, Any]]:
         self.refresh_all_node_metrics()
-        return db.fetch_all(
+        nodes = db.fetch_all(
             "SELECT * FROM nodes WHERE status = 'ONLINE' AND network_status = 'CONNECTED' ORDER BY node_id ASC"
         )
+        if not nodes:
+            self.initialize_nodes()
+            nodes = db.fetch_all(
+                "SELECT * FROM nodes WHERE status = 'ONLINE' AND network_status = 'CONNECTED' ORDER BY node_id ASC"
+            )
+        return nodes
 
     def get_next_node_id(self) -> str:
         max_num = settings.node_count

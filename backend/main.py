@@ -79,6 +79,10 @@ app.add_middleware(
 )
 
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import RequestValidationError
+
+
 @app.exception_handler(VaultException)
 async def vault_exception_handler(request: Request, exc: VaultException):
     logger.warning("VaultException [%s]: %s", exc.error_code, exc.message)
@@ -92,14 +96,44 @@ async def vault_exception_handler(request: Request, exc: VaultException):
     )
 
 
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": "HTTP_ERROR",
+            "detail": exc.detail,
+            "status_code": exc.status_code,
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    msg = "; ".join(f"{e.get('loc', ['field'])[-1]}: {e.get('msg', 'invalid')}" for e in errors)
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "VALIDATION_ERROR",
+            "detail": msg,
+            "status_code": 422,
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, StarletteHTTPException):
+        return await http_exception_handler(request, exc)
+    if isinstance(exc, RequestValidationError):
+        return await validation_exception_handler(request, exc)
     logger.error("Unhandled internal error: %s", exc, exc_info=True)
     return JSONResponse(
         status_code=500,
         content={
             "error": "INTERNAL_SERVER_ERROR",
-            "detail": "An unexpected internal server error occurred.",
+            "detail": str(exc) if str(exc) else "An unexpected internal server error occurred.",
             "status_code": 500,
         },
     )

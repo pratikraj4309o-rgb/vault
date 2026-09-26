@@ -35,8 +35,11 @@ class Settings:
         self.auto_scale_enabled: bool = os.getenv("AUTO_SCALE_ENABLED", "true").lower() in ("true", "1", "yes")
         self.max_auto_scale_nodes: int = int(os.getenv("MAX_AUTO_SCALE_NODES", "12"))
 
-        self.supabase_url: str = os.getenv("SUPABASE_URL", "")
-        self.supabase_key: str = os.getenv("SUPABASE_KEY", "")
+        self.supabase_url: str = os.getenv("SUPABASE_URL", "https://tnydcxwuvqaibuiaihmq.supabase.co")
+        self.supabase_key: str = os.getenv(
+            "SUPABASE_KEY",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRueWRjeHd1dnFhaWJ1aWFpaG1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNTk4MzEsImV4cCI6MjEwNTkzNTgzMX0.49wRtdEpj9meRdQXuxyT-a5J9TFBJzDzdtzE-d6NqPQ",
+        )
         self.admin_password: str = os.getenv("ADMIN_PASSWORD", "admin123")
 
         is_vercel = os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
