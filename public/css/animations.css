@@ -1,0 +1,24 @@
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.14); }
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+
+.status-dot.healthy, .status-dot.degraded, .status-dot.critical {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+
+.svg-flow-line {
+  stroke-dasharray: 6 6;
+  animation: dashFlow 1.6s linear infinite;
+}
+
+.svg-repair-arc {
+  stroke-dasharray: 8 5;
+  animation: dashFlow 0.9s linear infinite;
+}

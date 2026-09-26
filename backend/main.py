@@ -108,7 +108,15 @@ app.include_router(integrity.router)
 app.include_router(supabase_router.router)
 app.include_router(auth.router)
 
-FRONTEND_DIR = BASE_DIR / "frontend"
+def _find_frontend_dir() -> Path:
+    for candidate in (BASE_DIR / "public", BASE_DIR / "frontend"):
+        if candidate.exists() and (candidate / "index.html").exists():
+            return candidate
+    return BASE_DIR / "frontend"
+
+
+FRONTEND_DIR = _find_frontend_dir()
+
 if FRONTEND_DIR.exists():
     for subdir in ("css", "js", "assets"):
         target = FRONTEND_DIR / subdir
@@ -125,10 +133,23 @@ if FRONTEND_DIR.exists():
 async def root_entrypoint(request: Request):
     accept = request.headers.get("accept", "")
     index_file = FRONTEND_DIR / "index.html"
-    if "text/html" in accept and index_file.exists():
+    if not index_file.exists():
+        for fallback in (BASE_DIR / "public" / "index.html", BASE_DIR / "frontend" / "index.html"):
+            if fallback.exists():
+                index_file = fallback
+                break
+
+    if index_file.exists():
+        if "application/json" in accept and "text/html" not in accept:
+            return {
+                "service": settings.app_name,
+                "status": "online",
+                "version": "1.0.0",
+                "docs": "/docs",
+                "health": "/api/health",
+            }
         return FileResponse(str(index_file))
-    if index_file.exists() and "application/json" not in accept:
-        return FileResponse(str(index_file))
+
     return {
         "service": settings.app_name,
         "status": "online",
@@ -141,6 +162,11 @@ async def root_entrypoint(request: Request):
 @app.get("/index.html")
 async def index_html_entrypoint():
     index_file = FRONTEND_DIR / "index.html"
+    if not index_file.exists():
+        for fallback in (BASE_DIR / "public" / "index.html", BASE_DIR / "frontend" / "index.html"):
+            if fallback.exists():
+                index_file = fallback
+                break
     if index_file.exists():
         return FileResponse(str(index_file))
     return JSONResponse(status_code=404, content={"error": "Not Found"})
