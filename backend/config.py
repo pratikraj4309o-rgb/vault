@@ -39,11 +39,16 @@ class Settings:
         self.supabase_key: str = os.getenv("SUPABASE_KEY", "")
         self.admin_password: str = os.getenv("ADMIN_PASSWORD", "admin123")
 
-        db_rel = os.getenv("DATABASE_PATH", "data/vault.db")
-        self.database_path: Path = (BASE_DIR / db_rel).resolve()
-
-        storage_rel = os.getenv("STORAGE_ROOT", "storage_nodes")
-        self.storage_root: Path = (BASE_DIR / storage_rel).resolve()
+        is_vercel = os.getenv("VERCEL") == "1" or os.getenv("VERCEL_ENV") is not None
+        if is_vercel:
+            tmp_root = Path("/tmp/vault")
+            self.database_path: Path = tmp_root / "data" / "vault.db"
+            self.storage_root: Path = tmp_root / "storage_nodes"
+        else:
+            db_rel = os.getenv("DATABASE_PATH", "data/vault.db")
+            self.database_path: Path = (BASE_DIR / db_rel).resolve()
+            storage_rel = os.getenv("STORAGE_ROOT", "storage_nodes")
+            self.storage_root: Path = (BASE_DIR / storage_rel).resolve()
 
     def update_admin_password(self, new_pass: str) -> None:
         self.admin_password = new_pass
@@ -51,7 +56,10 @@ class Settings:
         env_path = BASE_DIR / ".env"
         lines = []
         if env_path.exists():
-            lines = env_path.read_text(encoding="utf-8").splitlines()
+            try:
+                lines = env_path.read_text(encoding="utf-8").splitlines()
+            except OSError:
+                return
         new_lines = []
         found = False
         for line in lines:
@@ -62,7 +70,10 @@ class Settings:
                 new_lines.append(line)
         if not found:
             new_lines.append(f"ADMIN_PASSWORD={new_pass}")
-        env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        try:
+            env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        except OSError:
+            pass
 
     def update_supabase_credentials(self, url: str, key: str) -> None:
         self.supabase_url = url
@@ -74,7 +85,10 @@ class Settings:
         env_path = BASE_DIR / ".env"
         lines = []
         if env_path.exists():
-            lines = env_path.read_text(encoding="utf-8").splitlines()
+            try:
+                lines = env_path.read_text(encoding="utf-8").splitlines()
+            except OSError:
+                return
 
         new_lines = []
         found_url = False
@@ -95,7 +109,10 @@ class Settings:
         if not found_key:
             new_lines.append(f"SUPABASE_KEY={key}")
 
-        env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        try:
+            env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        except OSError:
+            pass
 
     def to_dict(self) -> Dict[str, Any]:
         return {

@@ -5,8 +5,8 @@ __pycache__/
 venv/
 env/
 .env
-data/*.db
-data/*.db-journal
+data/*
+!data/.gitkeep
 storage_nodes/*/data/*
 !storage_nodes/*/data/.gitkeep
 .pytest_cache/

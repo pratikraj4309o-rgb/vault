@@ -112,8 +112,13 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 if FRONTEND_DIR.exists():
     for subdir in ("css", "js", "assets"):
         target = FRONTEND_DIR / subdir
-        target.mkdir(parents=True, exist_ok=True)
-        app.mount(f"/{subdir}", StaticFiles(directory=str(target)), name=subdir)
+        if not target.exists():
+            try:
+                target.mkdir(parents=True, exist_ok=True)
+            except OSError:
+                pass
+        if target.exists():
+            app.mount(f"/{subdir}", StaticFiles(directory=str(target)), name=subdir)
 
 
 @app.get("/")
@@ -131,3 +136,17 @@ async def root_entrypoint(request: Request):
         "docs": "/docs",
         "health": "/api/health",
     }
+
+
+@app.get("/index.html")
+async def index_html_entrypoint():
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file))
+    return JSONResponse(status_code=404, content={"error": "Not Found"})
+
+
+@app.get("/favicon.ico")
+async def favicon_entrypoint():
+    from fastapi import Response
+    return Response(status_code=204)
